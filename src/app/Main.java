@@ -1,6 +1,8 @@
 package app;
 
 import java.util.ArrayList;
+
+import entities.AdjacencyList;
 import utils.DynamicFrame;
 import utils.FileNavigator;
 
@@ -16,10 +18,11 @@ public class Main {
 		mainMenu.add("3. Clear the screen;");
 		mainMenu.add("4. Exit the program;");
 		display.printFrame(mainMenu);
-		
-		FileNavigator fn = new FileNavigator("./data");
-		fn.recursiveList();
-		
+
+		AdjacencyList adj = new AdjacencyList();
+		FileNavigator fn = new FileNavigator("./fullData");
+		fn.listGraph(adj);
+		adj.print();
 	}
 
 }
