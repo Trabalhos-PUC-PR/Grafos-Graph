@@ -92,7 +92,7 @@ public class FileNavigator {
 						List<Email> recipients = new ArrayList<>();
 
 						for (int i = 1; i < splitTo.length; i++) {
-							adj.addAdjacency(sender, new Email(splitTo[i].replaceAll(",", "")));
+							adj.addAdjacency(sender, new Email(splitTo[i].replaceAll(",", "")), true);
 							recipients.add(new Email(splitTo[i].replaceAll(",", "")));
 						}
 						if (splitTo.length > 2) {
@@ -100,7 +100,7 @@ public class FileNavigator {
 							while (!extraLines[0].equals("Subject:")) {
 								for (int i = 0; i < extraLines.length; i++) {
 									Email newFromExtra = new Email(extraLines[i].replaceAll(",", "").replaceAll("\t", ""));
-									adj.addAdjacency(sender, newFromExtra);
+									adj.addAdjacency(sender, newFromExtra, true);
 									recipients.add(newFromExtra);
 								}
 								extraLines = br.readLine().split(" ");

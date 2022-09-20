@@ -20,9 +20,13 @@ public class Main {
 		display.printFrame(mainMenu);
 
 		AdjacencyList adj = new AdjacencyList();
-		FileNavigator fn = new FileNavigator("./fullData");
+		FileNavigator fn = new FileNavigator("./smallData");
+		
 		fn.listGraph(adj);
-		adj.print();
+//		adj.print();
+		System.out.println("Vertexes: "+ adj.getTotalVertexes());
+		System.out.println("Edges: "+adj.getTotalEdges());
+		System.out.println();
 	}
 
 }
