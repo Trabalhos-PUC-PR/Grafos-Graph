@@ -1,8 +1,11 @@
 package app;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import entities.AdjacencyList;
+import interfaces.Plotable;
 import utils.DynamicFrame;
 import utils.FileNavigator;
 
@@ -20,12 +23,29 @@ public class Main {
 		display.printFrame(mainMenu);
 
 		AdjacencyList adj = new AdjacencyList();
-		FileNavigator fn = new FileNavigator("./smallData");
+		FileNavigator fn = new FileNavigator("./fullData");
 		
-		fn.listGraph(adj);
-//		adj.print();
+		adj = fn.listGraph();
+		
+		System.out.println("\nENVIADOS (top 20 que mais enviaram emails considerando repetições): ");
+		adj.print(adj.getSumOfWeightedEdges(20));
+		System.out.println("\nREFERENCIAS (top 20 que mais receberam emails): ");
+		adj.print(adj.getSumOfReferences(20));
+		
 		System.out.println("Vertexes: "+ adj.getTotalVertexes());
 		System.out.println("Edges: "+adj.getTotalEdges());
+		
+		List<Plotable> path = adj.depthSearch("darron.giron@enron.com", "martha.benner@enron.com");
+		
+		if(path != null) {
+			Collections.reverse(path);
+			System.out.println("darron.giron@enron.com");
+			for(Plotable p : path) {
+				System.out.println(p.getLabel());
+			}
+		} else {
+			System.out.println("Theres no path :(");
+		}
 		System.out.println();
 	}
 

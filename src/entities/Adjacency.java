@@ -32,7 +32,7 @@ public class Adjacency implements Comparable<Adjacency>{
 		this.weight--;
 	}
 	
-	public Plotable getAdjacent() {
+	public Plotable getPlotable() {
 		return vertex;
 	}
 	
@@ -59,7 +59,7 @@ public class Adjacency implements Comparable<Adjacency>{
 		if (getClass() != obj.getClass())
 			return false;
 		Adjacency other = (Adjacency) obj;
-		return Objects.equals(vertex, other.getAdjacent());
+		return Objects.equals(vertex, other.getPlotable());
 	}
 
 	@Override
