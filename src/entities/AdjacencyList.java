@@ -21,6 +21,11 @@ public class AdjacencyList {
 		list = new LinkedHashMap<Plotable, List<Adjacency>>();
 	}
 
+	/**
+	 * adds a given vertex to the graph
+	 * @param vertex the given vertex
+	 * @return true if the vertex was added, false otherwise
+	 */
 	public boolean addVertex(Plotable vertex) {
 		if (!list.containsKey(vertex)) {
 			list.put(vertex, new ArrayList<Adjacency>());
@@ -88,10 +93,18 @@ public class AdjacencyList {
 		return false;
 	}
 
+	/**
+	 * gets total vertexes from graph
+	 * @return the total vertexes
+	 */
 	public int getTotalVertexes() {
 		return list.size();
 	}
 
+	/**
+	 * gets total of edges from the graph
+	 * @return the total of edges
+	 */
 	public int getTotalEdges() {
 		int count = 0;
 		for (Entry<Plotable, List<Adjacency>> entry : list.entrySet()) {
@@ -100,6 +113,11 @@ public class AdjacencyList {
 		return count;
 	}
 
+	/**
+	 * gets the vertex corresponding to the given label
+	 * @param label the given label
+	 * @return the vertex
+	 */
 	public Plotable getVertex(String label) {
 		for (Entry<Plotable, List<Adjacency>> valueSet : list.entrySet()) {
 			if (valueSet.getKey().getLabel().equals(label)) {
@@ -109,6 +127,7 @@ public class AdjacencyList {
 		return null;
 	}
 
+	@Deprecated
 	public Plotable getVertex(int index) {
 		int cont = 0;
 		for (Entry<Plotable, List<Adjacency>> valueSet : list.entrySet()) {
@@ -120,6 +139,12 @@ public class AdjacencyList {
 		return null;
 	}
 
+	/**
+	 * gets adjacency between the origin and destiny
+	 * @param origin the vertex of origin
+	 * @param destiny the vertex of destiny
+	 * @return the adjacency
+	 */
 	public Adjacency getAdjacency(Plotable origin, Plotable destiny) {
 		List<Adjacency> adjacencies = list.get(origin);
 		for (Adjacency adj : adjacencies) {
@@ -143,10 +168,12 @@ public class AdjacencyList {
 			for (Adjacency adj : entry.getValue()) {
 				if (aux.get(adj.getPlotable()) != null) {
 					int auxInt = aux.get(adj.getPlotable());
-					auxInt += adj.getWeight();
+//					auxInt += adj.getWeight();
+					auxInt += 1;
 					aux.put(adj.getPlotable(), auxInt);
 				} else {
-					aux.put(adj.getPlotable(), adj.getWeight().intValue());
+//					aux.put(adj.getPlotable(), adj.getWeight().intValue());
+					aux.put(adj.getPlotable(), 1);
 				}
 			}
 		}
@@ -209,7 +236,6 @@ public class AdjacencyList {
 
 	/**
 	 * Prints a given map
-	 * 
 	 * @param list the map
 	 */
 	public void print(Map<Plotable, Integer> list) {
@@ -225,14 +251,73 @@ public class AdjacencyList {
 
 	}
 
+	/**
+	 * Gets the list of adjacent vertexes from chosen string label
+	 * @param label The label
+	 * @return A list of adjacent vertexes
+	 */
 	public List<Adjacency> getListOfAdjacency(String label) {
 		return list.get(getVertex(label));
 	}
 
+	/**
+	 * Gets the list of adjacent vertexes from chosen Plotable
+	 * @param label The object
+	 * @return A list of adjacent vertexes
+	 */
 	public List<Adjacency> getListOfAdjacency(Plotable label) {
 		return list.get(label);
 	}
 
+	/**
+	 * Gets every connection that given vertex has, within the given layer limit
+	 * @param startLabel where the search will start
+	 * @param limit the layer where the search will end
+	 * @return a list of vertexes that have some kind of adjacency with the start vertex
+	 */
+	public List<Plotable> LayeredListing(String startLabel, int limit) {
+		Plotable start = getVertex(startLabel);
+		if (start == null) {
+			System.err.println("ConnectedVertexes ERROR: Start does not exist");
+			return null;
+		}
+		Map<Plotable, Boolean> visited = new HashMap<>();
+		Queue<Plotable> queue = new LinkedList<>();
+		List<Plotable> path = new ArrayList<>();
+		int currentLayerSize = 0;
+		int atLayer = -1;
+		
+		queue.add(start);
+		while (queue.size() > 0) {
+			Plotable first = queue.remove();
+			if (!visited.containsKey(first)) {
+				visited.put(first, true);
+				path.add(first);
+				List<Adjacency> adjacencyList = list.get(first);
+				if (atLayer + 1 != limit) {
+					for (Adjacency adjacency : adjacencyList) {
+						queue.add(adjacency.getPlotable());
+					}
+				}
+				if (currentLayerSize == 0) {
+					currentLayerSize = queue.size();
+					if (atLayer == limit) {
+						return path;
+					}
+					atLayer++;
+				}
+				currentLayerSize--;
+			}
+		}
+		return path;
+	}
+
+	/**
+	 * BreadthSearch implementation, gets path between the start and destiny (disregarding weight)
+	 * @param startLabel the starting vertex
+	 * @param destinyLabel the end vertex
+	 * @return the path between the start and destiny
+	 */
 	public List<Plotable> breadthSearch(String startLabel, String destinyLabel) {
 		Plotable start = getVertex(startLabel);
 		Plotable destiny = getVertex(destinyLabel);
@@ -263,6 +348,12 @@ public class AdjacencyList {
 		return null;
 	}
 
+	/**
+	 * Implementation of depth search, gets the path between the start and destiny (disregarding weight)
+	 * @param startLabel the starting vertex
+	 * @param destinyLabel the end vertex
+	 * @return the path between the start and destiny
+	 */
 	public List<Plotable> depthSearch(String startLabel, String destinyLabel) {
 		Plotable start = getVertex(startLabel);
 		Plotable destiny = getVertex(destinyLabel);
@@ -290,6 +381,13 @@ public class AdjacencyList {
 		}
 	}
 
+	/**
+	 * recursive depth search
+	 * @param visited a map of visited vertexes
+	 * @param currentAdj the current adjacency
+	 * @param destiny the vertex where we want to reach
+	 * @return a list of plotable as the path taken to reach the destination, null if it cant be reached
+	 */
 	private List<Plotable> recursiveDepthSearch(Map<Plotable, Boolean> visited, Adjacency currentAdj,
 			Plotable destiny) {
 		if (!visited.containsKey(currentAdj.getPlotable()) || !visited.get(currentAdj.getPlotable())) {

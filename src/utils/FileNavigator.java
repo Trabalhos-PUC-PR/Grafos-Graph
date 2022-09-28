@@ -150,7 +150,7 @@ public class FileNavigator {
 							if(!adj.addAdjacency(sender, aux, true)) {
 								adj.getAdjacency(sender, aux).upWeightByOne();
 							}
-							recipients.add(new Email(splitTo[i].replaceAll(",", "")));
+							recipients.add(aux);
 						}
 						if (splitTo.length > 2) {
 							String[] extraLines = br.readLine().split(" ");
