@@ -23,7 +23,7 @@ public class Main {
 		display.printFrame(mainMenu);
 
 		AdjacencyList adj = new AdjacencyList();
-		FileNavigator fn = new FileNavigator("./fullData");
+		FileNavigator fn = new FileNavigator("./mockData");
 		
 		adj = fn.listGraph();
 		
@@ -34,12 +34,12 @@ public class Main {
 		
 		System.out.println("Vertexes: "+ adj.getTotalVertexes());
 		System.out.println("Edges: "+adj.getTotalEdges());
+
+		List<Plotable> path = adj.depthSearch("pessoa3", "pessoa1");
+		List<Plotable> path2 = adj.breadthSearch("pessoa3", "pessoa1");
 		
-		List<Plotable> path = adj.depthSearch("darron.giron@enron.com", "martha.benner@enron.com");
-		
+		System.out.println("\nDepth:");
 		if(path != null) {
-			Collections.reverse(path);
-			System.out.println("darron.giron@enron.com");
 			for(Plotable p : path) {
 				System.out.println(p.getLabel());
 			}
@@ -47,6 +47,15 @@ public class Main {
 			System.out.println("Theres no path :(");
 		}
 		System.out.println();
+
+		System.out.println("Breadth:");
+		if(path2 != null) {
+			for(Plotable p : path2) {
+				System.out.println(p.getLabel());
+			}
+		} else {
+			System.out.println("Theres no path :(");
+		}
 	}
 
 }

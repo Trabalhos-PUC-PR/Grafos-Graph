@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import interfaces.Plotable;
@@ -231,11 +233,41 @@ public class AdjacencyList {
 		return list.get(label);
 	}
 
+	public List<Plotable> breadthSearch(String startLabel, String destinyLabel) {
+		Plotable start = getVertex(startLabel);
+		Plotable destiny = getVertex(destinyLabel);
+		if (start == null || destiny == null) {
+			System.err.println("BreadthSearch ERROR: Start or Destiny does not exist");
+			return null;
+		}
+		Map<Plotable, Boolean> visited = new HashMap<>();
+		Queue<Plotable> queue = new LinkedList<>();
+		List<Plotable> path = new ArrayList<>();
+		if (!start.equals(destiny)) {
+			queue.add(start);
+			while (queue.size() > 0) {
+				Plotable first = queue.remove();
+				if (!visited.containsKey(first)) {
+					visited.put(first, true);
+					path.add(first);
+					if (first.equals(destiny)) {
+						return path;
+					}
+					List<Adjacency> adjacencyList = list.get(first);
+					for (Adjacency adjacency : adjacencyList) {
+						queue.add(adjacency.getPlotable());
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	public List<Plotable> depthSearch(String startLabel, String destinyLabel) {
 		Plotable start = getVertex(startLabel);
 		Plotable destiny = getVertex(destinyLabel);
 		if (start == null || destiny == null) {
-			System.out.println("ERROR");
+			System.err.println("DepthSearch ERROR: Start or Destiny does not exist");
 			return null;
 		}
 		Map<Plotable, Boolean> visited = new HashMap<>();
@@ -243,20 +275,27 @@ public class AdjacencyList {
 			visited.put(start, true);
 			for (Adjacency adj : getListOfAdjacency(start)) {
 				List<Plotable> aux = recursiveDepthSearch(visited, adj, destiny);
-				if(aux != null) {
+				if (aux != null) {
+					aux.add(start);
+					Collections.reverse(aux);
 					return aux;
 				}
 			}
+			return null;
+		} else {
+			List<Plotable> aux = new ArrayList<>();
+			aux.add(destiny);
+			aux.add(start);
+			return aux;
 		}
-		return null;
 	}
 
-	private List<Plotable>recursiveDepthSearch(Map<Plotable, Boolean> visited, Adjacency currentAdj, Plotable destiny) {
-//		System.out.printf("currently at %s - searching for %s\n", currentAdj, destiny.getLabel());
+	private List<Plotable> recursiveDepthSearch(Map<Plotable, Boolean> visited, Adjacency currentAdj,
+			Plotable destiny) {
 		if (!visited.containsKey(currentAdj.getPlotable()) || !visited.get(currentAdj.getPlotable())) {
 			visited.put(currentAdj.getPlotable(), true);
 			if (currentAdj.getPlotable().getLabel().equals(destiny.getLabel())) {
-//				System.out.println("FOUND IT!");
+//				FOUND THE DESTINY ADJ
 				List<Plotable> aux = new ArrayList<Plotable>();
 				aux.add(currentAdj.getPlotable());
 				return aux;
@@ -271,7 +310,7 @@ public class AdjacencyList {
 			}
 			return null;
 		} else {
-//			System.out.printf("ALREADY VISITED %s\n", currentAdj.getPlotable().getLabel());
+//			found visited adjacency, returning
 			return null;
 		}
 	}
