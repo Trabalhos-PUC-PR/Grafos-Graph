@@ -283,23 +283,24 @@ public class AdjacencyList {
 		queue.add(start);
 		while (queue.size() > 0) {
 			Plotable first = queue.remove();
+			currentLayerSize--;
 			if (!visited.containsKey(first)) {
 				visited.put(first, true);
-				path.add(first);
 				List<Adjacency> adjacencyList = list.get(first);
 				if (atLayer + 1 != limit) {
 					for (Adjacency adjacency : adjacencyList) {
 						queue.add(adjacency.getPlotable());
 					}
+				} else {
+					path.add(first);
 				}
-				if (currentLayerSize == 0) {
+				if (currentLayerSize <= 0) {
 					currentLayerSize = queue.size();
 					if (atLayer == limit) {
 						return path;
 					}
 					atLayer++;
 				}
-				currentLayerSize--;
 			}
 		}
 		return path;
@@ -466,7 +467,7 @@ public class AdjacencyList {
 		}
 	}
 
-	public List<Plotable> shortestPath(String startLabel, String destinyLabel) {
+	public List<Plotable> dijkstraPath(String startLabel, String destinyLabel) {
 		Plotable start = getVertex(startLabel);
 		Plotable destiny = getVertex(destinyLabel);
 
@@ -480,59 +481,45 @@ public class AdjacencyList {
 		visited.add(start);
 
 		System.out.println("begin of dik");
-		List<Plotable> shortestPath = recursiveShortestPath(visited, infoTable, start, destiny);
-		System.out.println("end of dik");
 
-		return shortestPath;
+		infoTable = recursiveLongestPath(visited, infoTable, start, destiny);
+		List<Plotable> path = new ArrayList<>();
+		path.add(destiny);
+		Plotable previous = infoTable.get(destiny).getPreviousVertex();
+		double distance = infoTable.get(destiny).getDistance();
+		while (previous != null) {
+			path.add(previous);
+			previous = infoTable.get(previous).getPreviousVertex();
+		}
+		System.out.printf("end of dik (distance:%.2f)\n", distance);
+
+		return path;
 	}
 
-	/**
-	 * stackoverflow on fulldataset :(
-	 */
-	private List<Plotable> recursiveShortestPath(Set<Plotable> visited, Map<Plotable, VertexInfo> infoTable,
+	private Map<Plotable, VertexInfo> recursiveLongestPath(Set<Plotable> visited, Map<Plotable, VertexInfo> infoTable,
 			Plotable vertex, Plotable destiny) {
-		if (vertex == destiny) {
-			List<Plotable> aux = new ArrayList<>();
-			aux.add(destiny);
-			Plotable previous = infoTable.get(destiny).getPreviousVertex();
-			while(previous != null) {
-				aux.add(previous);
-				previous = infoTable.get(previous).getPreviousVertex();
+		while (vertex != destiny) {
+			visited.add(vertex);
+			List<Adjacency> adjacents = getListOfAdjacency(vertex);
+			for (Adjacency adjacency : adjacents) {
+				Plotable adjacentVertex = adjacency.getPlotable();
+				double newDist = Math.pow(adjacency.getWeight() + infoTable.get(vertex).getDistance(), 1);
+				if (!infoTable.containsKey(adjacentVertex)) {
+					infoTable.put(adjacentVertex, new VertexInfo(Double.MAX_VALUE, vertex));
+				}
+				if (infoTable.get(adjacentVertex).getDistance() > newDist) {
+					infoTable.put(adjacentVertex, new VertexInfo(newDist, vertex));
+				}
 			}
-			return aux;
-		}
-		visited.add(vertex);
-		List<Adjacency> adjacents = getListOfAdjacency(vertex);
-		for (Adjacency adjacency : adjacents) {
-			Plotable adjacentVertex = adjacency.getPlotable();
-			double newDist = adjacency.getWeight() + infoTable.get(vertex).getDistance();
-			if (!infoTable.containsKey(adjacentVertex)) {
-				infoTable.put(adjacentVertex, new VertexInfo(Double.MAX_VALUE, vertex));
-			}
-			if (infoTable.get(adjacentVertex).getDistance() > newDist) {
-				infoTable.put(adjacentVertex, new VertexInfo(newDist, vertex));
-			}
-		}
-		infoTable = sortInfoTable(infoTable);
-		for (Entry<Plotable, VertexInfo> info : infoTable.entrySet()) {
-			if (!visited.contains(info.getKey())) {
-				return recursiveShortestPath(visited, infoTable, info.getKey(), destiny);
+			double lowest = Double.MAX_VALUE;
+			for (Entry<Plotable, VertexInfo> info : infoTable.entrySet()) {
+				if (!visited.contains(info.getKey()) && info.getValue().getDistance() < lowest) {
+					lowest = info.getValue().getDistance();
+					vertex = info.getKey();
+				}
 			}
 		}
-		return null;
-	}
-
-	private Map<Plotable, VertexInfo> sortInfoTable(Map<Plotable, VertexInfo> infoTable) {
-		return infoTable.entrySet().stream()
-				// Entry is a nested class from Map, heres the ref:
-				.sorted(Map.Entry.<Plotable, VertexInfo>comparingByValue((w1, w2) -> {
-					if (w1.getDistance() == 0)
-						return 1;
-					if (w2.getDistance() == 0)
-						return -1;
-					return (int) (w1.getDistance() - w2.getDistance());
-				}))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+		return infoTable;
 	}
 
 	/**

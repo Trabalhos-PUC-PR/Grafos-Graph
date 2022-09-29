@@ -22,38 +22,38 @@ public class Main {
 
 		AdjacencyList adj = new AdjacencyList();
 		FileNavigator fn = new FileNavigator("./fullData");
-		
+
 		adj = fn.listGraph();
-		
+
 		System.out.println("\nENVIADOS (top 20 que mais enviaram emails considerando repetições): ");
 		adj.print(adj.getSumOfEdges(20));
 		System.out.println("\nREFERENCIAS (top 20 que mais receberam emails): ");
 		adj.print(adj.getSumOfReferences(20));
-		
-		System.out.println("Vertexes: "+ adj.getTotalVertexes());
-		System.out.println("Edges: "+adj.getTotalEdges());
+
+		System.out.println("Vertexes: " + adj.getTotalVertexes());
+		System.out.println("Edges: " + adj.getTotalEdges());
 
 		List<Plotable> path1 = adj.depthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
 		List<Plotable> path2 = adj.breadthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
 		List<Plotable> path3 = adj.layeredListing("drew.fossum@enron.com", 2);
-		List<Plotable> path4 = adj.shortestPath("drew.fossum@enron.com", "hestes@lynchchappell.com");
-		
+		List<Plotable> path4 = adj.dijkstraPath("drew.fossum@enron.com", "d.smith@enron.com");
+
 		System.out.println("\nDepth:");
-		printList(path1);
+//		printList(path1);
 
 		System.out.println("\nBreadth:");
-		printList(path2);
-		
+//		printList(path2);
+
 		System.out.println("\nLayered Listing:");
-		printList(path3);
-		
-		System.out.println("\nShortest:");
+//		printList(path3);
+
+		System.out.println("\ndijkstraPath:");
 		printList(path4);
 	}
-	
+
 	public static void printList(List<Plotable> list) {
-		if(list != null) {
-			for(Plotable p : list) {
+		if (list != null) {
+			for (Plotable p : list) {
 				System.out.println(p.getLabel());
 			}
 		} else {
