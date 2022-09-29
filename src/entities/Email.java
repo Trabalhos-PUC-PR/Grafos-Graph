@@ -38,7 +38,10 @@ public class Email implements Plotable {
 		Email other = (Email) obj;
 		return getLabel().equals(other.getLabel());
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "[" + email + "]";
+	}
 	
 }

@@ -3,12 +3,14 @@ package entities;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import interfaces.Plotable;
@@ -23,6 +25,7 @@ public class AdjacencyList {
 
 	/**
 	 * adds a given vertex to the graph
+	 * 
 	 * @param vertex the given vertex
 	 * @return true if the vertex was added, false otherwise
 	 */
@@ -95,6 +98,7 @@ public class AdjacencyList {
 
 	/**
 	 * gets total vertexes from graph
+	 * 
 	 * @return the total vertexes
 	 */
 	public int getTotalVertexes() {
@@ -103,6 +107,7 @@ public class AdjacencyList {
 
 	/**
 	 * gets total of edges from the graph
+	 * 
 	 * @return the total of edges
 	 */
 	public int getTotalEdges() {
@@ -115,6 +120,7 @@ public class AdjacencyList {
 
 	/**
 	 * gets the vertex corresponding to the given label
+	 * 
 	 * @param label the given label
 	 * @return the vertex
 	 */
@@ -141,7 +147,8 @@ public class AdjacencyList {
 
 	/**
 	 * gets adjacency between the origin and destiny
-	 * @param origin the vertex of origin
+	 * 
+	 * @param origin  the vertex of origin
 	 * @param destiny the vertex of destiny
 	 * @return the adjacency
 	 */
@@ -229,30 +236,13 @@ public class AdjacencyList {
 		}
 		return list.entrySet().stream()
 				// Entry is a nested class from Map, heres the ref:
-				// https://www.java67.com/2017/07/how-to-sort-map-by-values-in-java-8.html
 				.sorted(Map.Entry.<Plotable, Integer>comparingByValue().reversed()).limit(limit)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 	}
 
 	/**
-	 * Prints a given map
-	 * @param list the map
-	 */
-	public void print(Map<Plotable, Integer> list) {
-		int count = 0;
-		for (Entry<Plotable, Integer> valueSet : list.entrySet()) {
-			Plotable key = valueSet.getKey();
-			int value = valueSet.getValue();
-			System.out.printf("| (%02d) %" + 1 + "s || ", count, key.getLabel());
-			System.out.printf("%2d | ", value);
-			count++;
-			System.out.println();
-		}
-
-	}
-
-	/**
 	 * Gets the list of adjacent vertexes from chosen string label
+	 * 
 	 * @param label The label
 	 * @return A list of adjacent vertexes
 	 */
@@ -262,6 +252,7 @@ public class AdjacencyList {
 
 	/**
 	 * Gets the list of adjacent vertexes from chosen Plotable
+	 * 
 	 * @param label The object
 	 * @return A list of adjacent vertexes
 	 */
@@ -271,14 +262,16 @@ public class AdjacencyList {
 
 	/**
 	 * Gets every connection that given vertex has, within the given layer limit
+	 * 
 	 * @param startLabel where the search will start
-	 * @param limit the layer where the search will end
-	 * @return a list of vertexes that have some kind of adjacency with the start vertex
+	 * @param limit      the layer where the search will end
+	 * @return a list of vertexes that have some kind of adjacency with the start
+	 *         vertex
 	 */
-	public List<Plotable> LayeredListing(String startLabel, int limit) {
+	public List<Plotable> layeredListing(String startLabel, int limit) {
 		Plotable start = getVertex(startLabel);
 		if (start == null) {
-			System.err.println("ConnectedVertexes ERROR: Start does not exist");
+			System.err.println("LayeredListing ERROR: Start does not exist");
 			return null;
 		}
 		Map<Plotable, Boolean> visited = new HashMap<>();
@@ -286,7 +279,7 @@ public class AdjacencyList {
 		List<Plotable> path = new ArrayList<>();
 		int currentLayerSize = 0;
 		int atLayer = -1;
-		
+
 		queue.add(start);
 		while (queue.size() > 0) {
 			Plotable first = queue.remove();
@@ -313,14 +306,28 @@ public class AdjacencyList {
 	}
 
 	/**
-	 * BreadthSearch implementation, gets path between the start and destiny (disregarding weight)
-	 * @param startLabel the starting vertex
+	 * BreadthSearch implementation, gets path between the start and destiny
+	 * (disregarding weight)
+	 * 
+	 * @param startLabel   the starting vertex
 	 * @param destinyLabel the end vertex
 	 * @return the path between the start and destiny
 	 */
 	public List<Plotable> breadthSearch(String startLabel, String destinyLabel) {
 		Plotable start = getVertex(startLabel);
 		Plotable destiny = getVertex(destinyLabel);
+		return breadthSearch(start, destiny);
+	}
+
+	/**
+	 * BreadthSearch implementation, gets path between the start and destiny
+	 * (disregarding weight)
+	 * 
+	 * @param start   the starting vertex
+	 * @param destiny the end vertex
+	 * @return the path between the start and destiny
+	 */
+	public List<Plotable> breadthSearch(Plotable start, Plotable destiny) {
 		if (start == null || destiny == null) {
 			System.err.println("BreadthSearch ERROR: Start or Destiny does not exist");
 			return null;
@@ -349,8 +356,10 @@ public class AdjacencyList {
 	}
 
 	/**
-	 * Implementation of depth search, gets the path between the start and destiny (disregarding weight)
-	 * @param startLabel the starting vertex
+	 * Implementation of depth search, gets the path between the start and destiny
+	 * (disregarding weight)
+	 * 
+	 * @param startLabel   the starting vertex
 	 * @param destinyLabel the end vertex
 	 * @return the path between the start and destiny
 	 */
@@ -361,9 +370,9 @@ public class AdjacencyList {
 			System.err.println("DepthSearch ERROR: Start or Destiny does not exist");
 			return null;
 		}
-		Map<Plotable, Boolean> visited = new HashMap<>();
+		Set<Plotable> visited = new HashSet<>();
 		if (!start.equals(destiny)) {
-			visited.put(start, true);
+			visited.add(start);
 			for (Adjacency adj : getListOfAdjacency(start)) {
 				List<Plotable> aux = recursiveDepthSearch(visited, adj, destiny);
 				if (aux != null) {
@@ -383,34 +392,147 @@ public class AdjacencyList {
 
 	/**
 	 * recursive depth search
-	 * @param visited a map of visited vertexes
+	 * 
+	 * @param visited    a map of visited vertexes
 	 * @param currentAdj the current adjacency
-	 * @param destiny the vertex where we want to reach
-	 * @return a list of plotable as the path taken to reach the destination, null if it cant be reached
+	 * @param destiny    the vertex where we want to reach
+	 * @return a list of plotable as the path taken to reach the destination, null
+	 *         if it cant be reached
 	 */
-	private List<Plotable> recursiveDepthSearch(Map<Plotable, Boolean> visited, Adjacency currentAdj,
-			Plotable destiny) {
-		if (!visited.containsKey(currentAdj.getPlotable()) || !visited.get(currentAdj.getPlotable())) {
-			visited.put(currentAdj.getPlotable(), true);
+	private List<Plotable> recursiveDepthSearch(Set<Plotable> visited, Adjacency currentAdj, Plotable destiny) {
+		if (!visited.contains(currentAdj.getPlotable())) {
+			visited.add(currentAdj.getPlotable());
 			if (currentAdj.getPlotable().getLabel().equals(destiny.getLabel())) {
-//				FOUND THE DESTINY ADJ
 				List<Plotable> aux = new ArrayList<Plotable>();
 				aux.add(currentAdj.getPlotable());
 				return aux;
 			}
 			for (Adjacency newAdj : list.get(currentAdj.getPlotable())) {
-				List<Plotable> aux = null;
-				aux = recursiveDepthSearch(visited, newAdj, destiny);
+				List<Plotable> aux = recursiveDepthSearch(visited, newAdj, destiny);
 				if (aux != null) {
 					aux.add(currentAdj.getPlotable());
 					return aux;
 				}
 			}
-			return null;
-		} else {
-//			found visited adjacency, returning
+		}
+		return null;
+	}
+
+	/**
+	 * Prints a given map
+	 * 
+	 * @param list the map
+	 */
+	public void print(Map<Plotable, Integer> list) {
+		int count = 0;
+		for (Entry<Plotable, Integer> valueSet : list.entrySet()) {
+			Plotable key = valueSet.getKey();
+			int value = valueSet.getValue();
+			System.out.printf("| (%02d) %" + 1 + "s || ", count, key.getLabel());
+			System.out.printf("%2d | ", value);
+			count++;
+			System.out.println();
+		}
+	}
+
+	protected class VertexInfo {
+		Double distance;
+		Plotable previousVertex;
+
+		public VertexInfo(Double shortestDistance, Plotable previousNode) {
+			this.distance = shortestDistance;
+			this.previousVertex = previousNode;
+		}
+
+		public Double getDistance() {
+			return distance;
+		}
+
+		public void setDistance(Double shortestDistance) {
+			this.distance = shortestDistance;
+		}
+
+		public Plotable getPreviousVertex() {
+			return previousVertex;
+		}
+
+		public void setPreviousVertex(Plotable previousNode) {
+			this.previousVertex = previousNode;
+		}
+
+		@Override
+		public String toString() {
+			return "VertexInfo [Distance=" + distance + ", previousVertex=" + previousVertex + "]";
+		}
+	}
+
+	public List<Plotable> shortestPath(String startLabel, String destinyLabel) {
+		Plotable start = getVertex(startLabel);
+		Plotable destiny = getVertex(destinyLabel);
+
+		if (breadthSearch(start, destiny) == null) {
 			return null;
 		}
+
+		Set<Plotable> visited = new HashSet<>();
+		Map<Plotable, VertexInfo> infoTable = new LinkedHashMap<>();
+		infoTable.put(start, new VertexInfo(0.0, null));
+		visited.add(start);
+
+		System.out.println("begin of dik");
+		List<Plotable> shortestPath = recursiveShortestPath(visited, infoTable, start, destiny);
+		System.out.println("end of dik");
+
+		return shortestPath;
+	}
+
+	/**
+	 * stackoverflow on fulldataset :(
+	 */
+	private List<Plotable> recursiveShortestPath(Set<Plotable> visited, Map<Plotable, VertexInfo> infoTable,
+			Plotable vertex, Plotable destiny) {
+		if (vertex == destiny) {
+			List<Plotable> aux = new ArrayList<>();
+			aux.add(destiny);
+			Plotable previous = infoTable.get(destiny).getPreviousVertex();
+			while(previous != null) {
+				aux.add(previous);
+				previous = infoTable.get(previous).getPreviousVertex();
+			}
+			return aux;
+		}
+		visited.add(vertex);
+		List<Adjacency> adjacents = getListOfAdjacency(vertex);
+		for (Adjacency adjacency : adjacents) {
+			Plotable adjacentVertex = adjacency.getPlotable();
+			double newDist = adjacency.getWeight() + infoTable.get(vertex).getDistance();
+			if (!infoTable.containsKey(adjacentVertex)) {
+				infoTable.put(adjacentVertex, new VertexInfo(Double.MAX_VALUE, vertex));
+			}
+			if (infoTable.get(adjacentVertex).getDistance() > newDist) {
+				infoTable.put(adjacentVertex, new VertexInfo(newDist, vertex));
+			}
+		}
+		infoTable = sortInfoTable(infoTable);
+		for (Entry<Plotable, VertexInfo> info : infoTable.entrySet()) {
+			if (!visited.contains(info.getKey())) {
+				return recursiveShortestPath(visited, infoTable, info.getKey(), destiny);
+			}
+		}
+		return null;
+	}
+
+	private Map<Plotable, VertexInfo> sortInfoTable(Map<Plotable, VertexInfo> infoTable) {
+		return infoTable.entrySet().stream()
+				// Entry is a nested class from Map, heres the ref:
+				.sorted(Map.Entry.<Plotable, VertexInfo>comparingByValue((w1, w2) -> {
+					if (w1.getDistance() == 0)
+						return 1;
+					if (w2.getDistance() == 0)
+						return -1;
+					return (int) (w1.getDistance() - w2.getDistance());
+				}))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 	}
 
 	/**

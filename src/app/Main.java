@@ -21,7 +21,7 @@ public class Main {
 		display.printFrame(mainMenu);
 
 		AdjacencyList adj = new AdjacencyList();
-		FileNavigator fn = new FileNavigator("./mockData");
+		FileNavigator fn = new FileNavigator("./fullData");
 		
 		adj = fn.listGraph();
 		
@@ -33,35 +33,31 @@ public class Main {
 		System.out.println("Vertexes: "+ adj.getTotalVertexes());
 		System.out.println("Edges: "+adj.getTotalEdges());
 
-		List<Plotable> path1 = adj.depthSearch("pessoa3", "pessoa1");
-		List<Plotable> path2 = adj.breadthSearch("pessoa3", "pessoa1");
-		List<Plotable> path3 = adj.LayeredListing("pessoa6", 2);
+		List<Plotable> path1 = adj.depthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
+		List<Plotable> path2 = adj.breadthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
+		List<Plotable> path3 = adj.layeredListing("drew.fossum@enron.com", 2);
+		List<Plotable> path4 = adj.shortestPath("drew.fossum@enron.com", "hestes@lynchchappell.com");
 		
 		System.out.println("\nDepth:");
-		if(path1 != null) {
-			for(Plotable p : path1) {
-				System.out.println(p.getLabel());
-			}
-		} else {
-			System.out.println("Theres no path :(");
-		}
+		printList(path1);
 
 		System.out.println("\nBreadth:");
-		if(path2 != null) {
-			for(Plotable p : path2) {
-				System.out.println(p.getLabel());
-			}
-		} else {
-			System.out.println("Theres no path :(");
-		}
+		printList(path2);
 		
-		System.out.println("\nConnected:");
-		if(path3 != null) {
-			for(Plotable p : path3) {
+		System.out.println("\nLayered Listing:");
+		printList(path3);
+		
+		System.out.println("\nShortest:");
+		printList(path4);
+	}
+	
+	public static void printList(List<Plotable> list) {
+		if(list != null) {
+			for(Plotable p : list) {
 				System.out.println(p.getLabel());
 			}
 		} else {
-			System.out.println("Theres no path :(");
+			System.out.println("No");
 		}
 	}
 
