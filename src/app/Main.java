@@ -36,18 +36,18 @@ public class Main {
 		List<Plotable> path1 = adj.depthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
 		List<Plotable> path2 = adj.breadthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
 		List<Plotable> path3 = adj.layeredListing("drew.fossum@enron.com", 2);
-		List<Plotable> path4 = adj.dijkstraPath("drew.fossum@enron.com", "d.smith@enron.com");
+		List<Plotable> path4 = adj.shortestPath("drew.fossum@enron.com", "d.smith@enron.com");
 
-		System.out.println("\nDepth:");
-//		printList(path1);
+		System.out.println("\nBusca por Profundidade:");
+		printList(path1);
 
-		System.out.println("\nBreadth:");
-//		printList(path2);
+		System.out.println("\nBusca por Largura:");
+		printList(path2);
 
-		System.out.println("\nLayered Listing:");
-//		printList(path3);
+		System.out.println("\nListagem por Camada:");
+		printList(path3);
 
-		System.out.println("\ndijkstraPath:");
+		System.out.println("\nMenor Caminho:");
 		printList(path4);
 	}
 

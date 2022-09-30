@@ -2,7 +2,6 @@ package entities;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -12,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import interfaces.Plotable;
 
 public class AdjacencyList {
@@ -274,7 +272,7 @@ public class AdjacencyList {
 			System.err.println("LayeredListing ERROR: Start does not exist");
 			return null;
 		}
-		Map<Plotable, Boolean> visited = new HashMap<>();
+		Set<Plotable> visited = new HashSet<>();
 		Queue<Plotable> queue = new LinkedList<>();
 		List<Plotable> path = new ArrayList<>();
 		int currentLayerSize = 0;
@@ -284,8 +282,8 @@ public class AdjacencyList {
 		while (queue.size() > 0) {
 			Plotable first = queue.remove();
 			currentLayerSize--;
-			if (!visited.containsKey(first)) {
-				visited.put(first, true);
+			if (!visited.contains(first)) {
+				visited.add(first);
 				List<Adjacency> adjacencyList = list.get(first);
 				if (atLayer + 1 != limit) {
 					for (Adjacency adjacency : adjacencyList) {
@@ -333,15 +331,15 @@ public class AdjacencyList {
 			System.err.println("BreadthSearch ERROR: Start or Destiny does not exist");
 			return null;
 		}
-		Map<Plotable, Boolean> visited = new HashMap<>();
+		Set<Plotable> visited = new HashSet<>();
 		Queue<Plotable> queue = new LinkedList<>();
 		List<Plotable> path = new ArrayList<>();
 		if (!start.equals(destiny)) {
 			queue.add(start);
 			while (queue.size() > 0) {
 				Plotable first = queue.remove();
-				if (!visited.containsKey(first)) {
-					visited.put(first, true);
+				if (!visited.contains(first)) {
+					visited.add(first);
 					path.add(first);
 					if (first.equals(destiny)) {
 						return path;
@@ -436,38 +434,19 @@ public class AdjacencyList {
 		}
 	}
 
-	protected class VertexInfo {
-		Double distance;
-		Plotable previousVertex;
+	/**
+	 * A nested class, the only use for this class is to store info about the next step to be taken by the dijkstra algorithm
+	 * @author kovalski
+	 */
+	private record VertexInfo(Double distance, Plotable previousVertex) {}
 
-		public VertexInfo(Double shortestDistance, Plotable previousNode) {
-			this.distance = shortestDistance;
-			this.previousVertex = previousNode;
-		}
-
-		public Double getDistance() {
-			return distance;
-		}
-
-		public void setDistance(Double shortestDistance) {
-			this.distance = shortestDistance;
-		}
-
-		public Plotable getPreviousVertex() {
-			return previousVertex;
-		}
-
-		public void setPreviousVertex(Plotable previousNode) {
-			this.previousVertex = previousNode;
-		}
-
-		@Override
-		public String toString() {
-			return "VertexInfo [Distance=" + distance + ", previousVertex=" + previousVertex + "]";
-		}
-	}
-
-	public List<Plotable> dijkstraPath(String startLabel, String destinyLabel) {
+	/**
+	 * Gets the shortest path between the starting and ending vertexes
+	 * @param startLabel the starting vertex
+	 * @param destinyLabel the ending vertex
+	 * @return null if there is no connection between these two vertexes, else return a list of plotables with the shortest path
+	 */
+	public List<Plotable> shortestPath(String startLabel, String destinyLabel) {
 		Plotable start = getVertex(startLabel);
 		Plotable destiny = getVertex(destinyLabel);
 
@@ -480,41 +459,37 @@ public class AdjacencyList {
 		infoTable.put(start, new VertexInfo(0.0, null));
 		visited.add(start);
 
-		System.out.println("begin of dik");
-
-		infoTable = recursiveLongestPath(visited, infoTable, start, destiny);
+		infoTable = getPathInInfoTable(visited, infoTable, start, destiny);
 		List<Plotable> path = new ArrayList<>();
 		path.add(destiny);
-		Plotable previous = infoTable.get(destiny).getPreviousVertex();
-		double distance = infoTable.get(destiny).getDistance();
+		Plotable previous = infoTable.get(destiny).previousVertex();
 		while (previous != null) {
 			path.add(previous);
-			previous = infoTable.get(previous).getPreviousVertex();
+			previous = infoTable.get(previous).previousVertex();
 		}
-		System.out.printf("end of dik (distance:%.2f)\n", distance);
 
 		return path;
 	}
 
-	private Map<Plotable, VertexInfo> recursiveLongestPath(Set<Plotable> visited, Map<Plotable, VertexInfo> infoTable,
+	private Map<Plotable, VertexInfo> getPathInInfoTable(Set<Plotable> visited, Map<Plotable, VertexInfo> infoTable,
 			Plotable vertex, Plotable destiny) {
 		while (vertex != destiny) {
 			visited.add(vertex);
 			List<Adjacency> adjacents = getListOfAdjacency(vertex);
 			for (Adjacency adjacency : adjacents) {
 				Plotable adjacentVertex = adjacency.getPlotable();
-				double newDist = Math.pow(adjacency.getWeight() + infoTable.get(vertex).getDistance(), 1);
+				double newDist = Math.pow(adjacency.getWeight() + infoTable.get(vertex).distance(), 1);
 				if (!infoTable.containsKey(adjacentVertex)) {
 					infoTable.put(adjacentVertex, new VertexInfo(Double.MAX_VALUE, vertex));
 				}
-				if (infoTable.get(adjacentVertex).getDistance() > newDist) {
+				if (infoTable.get(adjacentVertex).distance() > newDist) {
 					infoTable.put(adjacentVertex, new VertexInfo(newDist, vertex));
 				}
 			}
 			double lowest = Double.MAX_VALUE;
 			for (Entry<Plotable, VertexInfo> info : infoTable.entrySet()) {
-				if (!visited.contains(info.getKey()) && info.getValue().getDistance() < lowest) {
-					lowest = info.getValue().getDistance();
+				if (!visited.contains(info.getKey()) && info.getValue().distance() < lowest) {
+					lowest = info.getValue().distance();
 					vertex = info.getKey();
 				}
 			}
