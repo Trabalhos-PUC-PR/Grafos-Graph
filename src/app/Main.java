@@ -1,27 +1,17 @@
 package app;
 
-import java.util.ArrayList;
 import java.util.List;
 import entities.AdjacencyList;
 import interfaces.Plotable;
-import utils.DynamicFrame;
 import utils.FileNavigator;
 
 public class Main {
 
 	public static void main(String[] args) {
-
-		DynamicFrame display = new DynamicFrame();
-		ArrayList<String> mainMenu = new ArrayList<>();
-		mainMenu.add("Select an option:");
-		mainMenu.add("1. Print graph;");
-		mainMenu.add("2. Config program;");
-		mainMenu.add("3. Clear the screen;");
-		mainMenu.add("4. Exit the program;");
-		display.printFrame(mainMenu);
-
 		AdjacencyList adj = new AdjacencyList();
-		FileNavigator fn = new FileNavigator("./fullData");
+
+		// change this path to the path of the folder that has the desired dataset
+		FileNavigator fn = new FileNavigator("./mockData2");
 
 		adj = fn.listGraph();
 
@@ -33,10 +23,16 @@ public class Main {
 		System.out.println("Vertexes: " + adj.getTotalVertexes());
 		System.out.println("Edges: " + adj.getTotalEdges());
 
-		List<Plotable> path1 = adj.depthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
-		List<Plotable> path2 = adj.breadthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
-		List<Plotable> path3 = adj.layeredListing("drew.fossum@enron.com", 2);
-		List<Plotable> path4 = adj.shortestPath("drew.fossum@enron.com", "d.smith@enron.com");
+//		List<Plotable> path1 = adj.depthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
+//		List<Plotable> path2 = adj.breadthSearch("drew.fossum@enron.com", "hestes@lynchchappell.com");
+//		List<Plotable> path3 = adj.layeredListing("drew.fossum@enron.com", 2);
+//		List<Plotable> path4 = adj.shortestPath("drew.fossum@enron.com", "d.smith@enron.com");
+
+//		searches with the 2nd mock dataset (look for the graph image for more details)
+		List<Plotable> path1 = adj.depthSearch("E", "D");
+		List<Plotable> path2 = adj.breadthSearch("E", "D");
+		List<Plotable> path3 = adj.layeredListing("B", 2);
+		List<Plotable> path4 = adj.shortestPath("A", "C");
 
 		System.out.println("\nBusca por Profundidade:");
 		printList(path1);
@@ -53,11 +49,16 @@ public class Main {
 
 	public static void printList(List<Plotable> list) {
 		if (list != null) {
+			System.out.print("[");
 			for (Plotable p : list) {
-				System.out.println(p.getLabel());
+				System.out.print(p.getLabel());
+				if (list.indexOf(p) != list.size() - 1) {
+					System.out.print(">");
+				}
 			}
+			System.out.print("]");
 		} else {
-			System.out.println("No");
+			System.out.println("There's no path, nor any vertex");
 		}
 	}
 

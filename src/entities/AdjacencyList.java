@@ -467,7 +467,7 @@ public class AdjacencyList {
 			path.add(previous);
 			previous = infoTable.get(previous).previousVertex();
 		}
-
+		Collections.reverse(path);
 		return path;
 	}
 
