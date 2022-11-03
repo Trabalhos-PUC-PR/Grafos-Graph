@@ -547,8 +547,8 @@ public class AdjacencyList {
 			}
 		}
 
-		result.printList();
-		return null;
+// 		result.printList();
+		return result;
 	}
 
 	/**
