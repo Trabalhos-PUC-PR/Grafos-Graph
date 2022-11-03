@@ -345,9 +345,10 @@ public class AdjacencyList {
 						return path;
 					}
 					List<Adjacency> adjacencyList = list.get(first);
-					for (Adjacency adjacency : adjacencyList) {
-						queue.add(adjacency.getPlotable());
-					}
+					if (adjacencyList != null)
+						for (Adjacency adjacency : adjacencyList) {
+							queue.add(adjacency.getPlotable());
+						}
 				}
 			}
 		}
@@ -435,16 +436,21 @@ public class AdjacencyList {
 	}
 
 	/**
-	 * A nested class, the only use for this class is to store info about the next step to be taken by the dijkstra algorithm
+	 * A nested class, the only use for this class is to store info about the next
+	 * step to be taken by the dijkstra algorithm
+	 * 
 	 * @author kovalski
 	 */
-	private record VertexInfo(Double distance, Plotable previousVertex) {}
+	private record VertexInfo(Double distance, Plotable previousVertex) {
+	}
 
 	/**
 	 * Gets the shortest path between the starting and ending vertexes
-	 * @param startLabel the starting vertex
+	 * 
+	 * @param startLabel   the starting vertex
 	 * @param destinyLabel the ending vertex
-	 * @return null if there is no connection between these two vertexes, else return a list of plotables with the shortest path
+	 * @return null if there is no connection between these two vertexes, else
+	 *         return a list of plotables with the shortest path
 	 */
 	public List<Plotable> shortestPath(String startLabel, String destinyLabel) {
 		Plotable start = getVertex(startLabel);
@@ -495,6 +501,54 @@ public class AdjacencyList {
 			}
 		}
 		return infoTable;
+	}
+
+	// nested class used for the kruskal algorithm
+	private record Edge(String src, String dest, double weight) {
+	}
+
+	private record Vertex(String label) implements Plotable {
+		@Override
+		public String getLabel() {
+			return label;
+		}
+
+		@Override
+		public void setLabel(String label) {
+
+		}
+	}
+
+	public AdjacencyList kruskalMst() {
+
+		ArrayList<Edge> edgeList = new ArrayList<Edge>();
+		for (Entry<Plotable, List<Adjacency>> set : list.entrySet()) {
+			String source = set.getKey().getLabel();
+			for (Adjacency adjacency : set.getValue()) {
+				String destiny = adjacency.getPlotable().getLabel();
+				double weight = adjacency.getWeight();
+
+				edgeList.add(new Edge(source, destiny, weight));
+			}
+		}
+
+		edgeList.sort((x, y) -> (int) (x.weight() - y.weight()));
+
+		AdjacencyList result = new AdjacencyList();
+		for (Edge edge : edgeList) {
+			System.out.println(edge);
+			Plotable auxSrc = new Vertex(edge.src());
+			Plotable auxDest = new Vertex(edge.dest());
+			if (result.breadthSearch(auxDest, auxSrc) == null) {
+				result.addAdjacency(auxSrc, auxDest, true);
+				result.addAdjacency(auxDest, auxSrc, true);
+				result.getAdjacency(auxSrc, auxDest).setWeight(edge.weight());
+				result.getAdjacency(auxDest, auxSrc).setWeight(edge.weight());
+			}
+		}
+
+		result.printList();
+		return null;
 	}
 
 	/**

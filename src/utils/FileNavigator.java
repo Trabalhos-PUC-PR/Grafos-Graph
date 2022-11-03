@@ -73,7 +73,7 @@ public class FileNavigator {
 						for (int i = 1; i < splitTo.length; i++) {
 							Email aux = new Email(splitTo[i].replaceAll(",", ""));
 							if(!adj.addAdjacency(sender, aux, true)) {
-								adj.getAdjacency(sender, aux).upWeightByOne();
+								adj.getAdjacency(sender, aux).incrementWeight();
 							}
 						}
 						if (splitTo.length > 2) {
@@ -82,7 +82,7 @@ public class FileNavigator {
 								for (int i = 0; i < extraLines.length; i++) {
 									Email aux = new Email(extraLines[i].replaceAll(",", "").replaceAll("\t", ""));
 									if(!adj.addAdjacency(sender, aux, true)) {
-										adj.getAdjacency(sender, aux).upWeightByOne();
+										adj.getAdjacency(sender, aux).incrementWeight();
 									}
 								}
 								extraLines = br.readLine().split(" ");

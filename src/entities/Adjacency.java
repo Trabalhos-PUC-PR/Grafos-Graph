@@ -24,11 +24,15 @@ public class Adjacency implements Comparable<Adjacency>{
 		this.weight = (double) weight;
 	}
 
-	public void upWeightByOne() {
+	public void setWeight(Double weight) { 
+		this.weight= weight ;
+	}
+	
+	public void incrementWeight() {
 		this.weight++;
 	}
 	
-	public void downWeightByOne() {
+	public void decrementWeight() {
 		this.weight--;
 	}
 	
