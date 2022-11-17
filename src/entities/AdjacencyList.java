@@ -1,7 +1,15 @@
 package entities;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -9,16 +17,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import interfaces.Plotable;
 
 public class AdjacencyList {
 
 	private Map<Plotable, List<Adjacency>> list;
+	private boolean directional;
 
 	public AdjacencyList() {
+		this.directional = true;
 		list = new LinkedHashMap<Plotable, List<Adjacency>>();
+	}
+
+	public AdjacencyList(boolean directional) {
+		this.directional = directional;
+		list = new LinkedHashMap<Plotable, List<Adjacency>>();
+	}
+
+	public boolean isDirected() {
+		return this.directional;
 	}
 
 	/**
@@ -74,6 +95,23 @@ public class AdjacencyList {
 	 *         already exists
 	 */
 	public boolean addAdjacency(Plotable origin, Plotable destiny, boolean autoCreateVertex) {
+		boolean result = adjacencyAdder(origin, destiny, autoCreateVertex);
+		if (!this.directional) {
+			boolean mirrorResult = adjacencyAdder(destiny, origin, false);
+			result = result && mirrorResult;
+		}
+		return result;
+	}
+
+	/**
+	 * @param origin           Where the adjacency will begin
+	 * @param destiny          Where the adjacency will end
+	 * @param autoCreateVertex If true, creates new vertexes when needed
+	 * @return true if the adjacency was set up succesfully, false otherwise. If
+	 *         autoCreateVertex is true, it returns false only when the adjacency
+	 *         already exists
+	 */
+	private boolean adjacencyAdder(Plotable origin, Plotable destiny, boolean autoCreateVertex) {
 		if (origin == null || destiny == null) {
 			throw new IllegalArgumentException("Error adding adjacency, origin or destiny are null!");
 		}
@@ -82,7 +120,8 @@ public class AdjacencyList {
 			addVertex(destiny);
 		} else {
 			if (!list.containsKey(origin) || !list.containsKey(destiny)) {
-				return false;
+				throw new IllegalArgumentException(
+						"Error adding adjacency, origin or destiny does not exist on current graph!");
 			}
 		}
 		List<Adjacency> aux = list.get(origin);
@@ -91,13 +130,14 @@ public class AdjacencyList {
 			aux.add(adjacencyAux);
 			return true;
 		}
+
 		return false;
 	}
 
 	/**
 	 * gets total vertexes from graph
 	 * 
-	 * @return the total vertexes
+	 * @return the total vertexesnew LinkedHashMap<Plotable, List<Adjacency>>()
 	 */
 	public int getTotalVertexes() {
 		return list.size();
@@ -162,7 +202,7 @@ public class AdjacencyList {
 
 	/**
 	 * Calculates the rate of entry of all vertexes, and stores it in a
-	 * LinkedHashMap
+	 * LinkedHashMap new LinkedHashMap<Plotable, List<Adjacency>>()
 	 * 
 	 * @param limit the size of the returned, sorted map, -1 to have no limit
 	 * @return a map sorted from the biggest sum to the lowest
@@ -189,7 +229,8 @@ public class AdjacencyList {
 	 * Calculates the sum of the rate of exit, including the weight, of every edge,
 	 * and stores it in a LinkedHashMap
 	 * 
-	 * @param limit the size of the returned, sorted map, -1 to have no limit
+	 * @param limit the size of the returned, sorted map, -1 to have no new
+	 *              LinkedHashMap<Plotable, List<Adjacency>>()limit
 	 * @return a map sorted from the biggest sum to the lowest
 	 */
 	public Map<Plotable, Integer> getSumOfWeightedEdges(int limit) {
@@ -249,7 +290,8 @@ public class AdjacencyList {
 	}
 
 	/**
-	 * Gets the list of adjacent vertexes from chosen Plotable
+	 * Gets the list of adjacent vertexes from chosen Plotablenew
+	 * LinkedHashMap<Plotable, List<Adjacency>>()
 	 * 
 	 * @param label The object
 	 * @return A list of adjacent vertexes
@@ -259,7 +301,7 @@ public class AdjacencyList {
 	}
 
 	/**
-	 * Gets every connection that given vertex has, within the given layer limit
+	 * Gets every connection that given vertex has, at given layer limit
 	 * 
 	 * @param startLabel where the search will start
 	 * @param limit      the layer where the search will end
@@ -299,6 +341,51 @@ public class AdjacencyList {
 					}
 					atLayer++;
 				}
+			}
+		}
+		return path;
+	}
+
+	/**
+	 * Gets every connection that given vertex has, within the given layer limit
+	 * 
+	 * @param startLabel where the search will start
+	 * @param limit      the layer where the search will end
+	 * @return a list of vertexes that have some kind of adjacency with the start
+	 *         vertexnew LinkedHashMap<Plotable, List<Adjacency>>()
+	 */
+	public List<Plotable> completeLayeredListing(String startLabel, int limit) {
+		Plotable start = getVertex(startLabel);
+		if (start == null) {
+			System.err.println("ConnectedVertexes ERROR: Start does not exist");
+			return null;
+		}
+		Set<Plotable> visited = new HashSet<>();
+		Queue<Plotable> queue = new LinkedList<>();
+		List<Plotable> path = new ArrayList<>();
+		int currentLayerSize = 0;
+		int atLayer = -1;
+
+		queue.add(start);
+		while (queue.size() > 0) {
+			Plotable first = queue.remove();
+			if (!visited.contains(first)) {
+				visited.add(first);
+				path.add(first);
+				List<Adjacency> adjacencyList = list.get(first);
+				if (atLayer + 1 != limit) {
+					for (Adjacency adjacency : adjacencyList) {
+						queue.add(adjacency.getPlotable());
+					}
+				}
+				if (currentLayerSize == 0) {
+					currentLayerSize = queue.size();
+					if (atLayer == limit) {
+						return path;
+					}
+					atLayer++;
+				}
+				currentLayerSize--;
 			}
 		}
 		return path;
@@ -419,23 +506,6 @@ public class AdjacencyList {
 	}
 
 	/**
-	 * Prints a given map
-	 * 
-	 * @param list the map
-	 */
-	public void print(Map<Plotable, Integer> list) {
-		int count = 0;
-		for (Entry<Plotable, Integer> valueSet : list.entrySet()) {
-			Plotable key = valueSet.getKey();
-			int value = valueSet.getValue();
-			System.out.printf("| (%02d) %" + 1 + "s || ", count, key.getLabel());
-			System.out.printf("%2d | ", value);
-			count++;
-			System.out.println();
-		}
-	}
-
-	/**
 	 * A nested class, the only use for this class is to store info about the next
 	 * step to be taken by the dijkstra algorithm
 	 * 
@@ -520,14 +590,12 @@ public class AdjacencyList {
 	}
 
 	public AdjacencyList kruskalMst() {
-
-		ArrayList<Edge> edgeList = new ArrayList<Edge>();
+		List<Edge> edgeList = new ArrayList<Edge>();
 		for (Entry<Plotable, List<Adjacency>> set : list.entrySet()) {
 			String source = set.getKey().getLabel();
 			for (Adjacency adjacency : set.getValue()) {
 				String destiny = adjacency.getPlotable().getLabel();
 				double weight = adjacency.getWeight();
-
 				edgeList.add(new Edge(source, destiny, weight));
 			}
 		}
@@ -535,8 +603,8 @@ public class AdjacencyList {
 		edgeList.sort((x, y) -> (int) (x.weight() - y.weight()));
 
 		AdjacencyList result = new AdjacencyList();
+
 		for (Edge edge : edgeList) {
-			System.out.println(edge);
 			Plotable auxSrc = new Vertex(edge.src());
 			Plotable auxDest = new Vertex(edge.dest());
 			if (result.breadthSearch(auxDest, auxSrc) == null) {
@@ -547,22 +615,191 @@ public class AdjacencyList {
 			}
 		}
 
-		result.printList();
-		return null;
+//		result.printList();
+		return result;
+	}
+
+	public List<List<Plotable>> getComponents() {
+		List<Plotable> vertexes = new ArrayList<>();
+		List<List<Plotable>> components = new ArrayList<>();
+
+		for (Entry<Plotable, List<Adjacency>> entry : list.entrySet()) {
+			vertexes.add(entry.getKey());
+		}
+
+		while (vertexes.size() > 0) {
+			List<Plotable> connected = completeLayeredListing(vertexes.get(0).getLabel(), getTotalVertexes());
+			components.add(connected);
+			for (Plotable connectedVertex : connected) {
+				int index = vertexes.indexOf(connectedVertex);
+				if (index > -1)
+					vertexes.remove(index);
+			}
+		}
+		return components;
+	}
+
+	public void save(String path) {
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path)))) {
+			new File(path).createNewFile();
+			StringBuilder sb = new StringBuilder();
+			sb.append("*Vertices  " + this.getTotalVertexes() + "\n");
+			int count = 1;
+			Map<Plotable, Integer> convertTable = new HashMap<>();
+
+			for (Entry<Plotable, List<Adjacency>> entry : list.entrySet()) {
+				sb.append(count + " \"" + entry.getKey().getLabel() + "\"\n");
+				convertTable.put(entry.getKey(), count);
+				count++;
+			}
+
+			sb.append("*" + (directional ? "Arcs" : "Edges") + "\n");
+			for (Entry<Plotable, List<Adjacency>> entry : list.entrySet()) {
+				int src = convertTable.get(entry.getKey());
+				for (Adjacency adj : entry.getValue()) {
+					int dest = convertTable.get(adj.getPlotable());
+					double weight = adj.getWeight();
+					sb.append(src + " " + dest + " " + weight + "\n");
+				}
+			}
+			bw.write(sb.toString());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public boolean load(String path) {
+		this.list = new LinkedHashMap<Plotable, List<Adjacency>>();
+		try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+			br.readLine();
+			String currentLine = br.readLine();
+			boolean addingEdges = false;
+			Map<Integer, Plotable> vertexList = new LinkedHashMap<>();
+
+			while (currentLine != null) {
+				if (!addingEdges) {
+					if (currentLine.charAt(0) == '*') {
+						// *Edges p nao direcionado e *Arcs para direcionado
+						this.directional = currentLine.charAt(1) == 'A';
+						currentLine = br.readLine();
+						addingEdges = true;
+					} else {
+						Vertex aux = new Vertex(currentLine.split("\"")[1]);
+						this.addVertex(aux);
+						vertexList.put(vertexList.size() + 1, aux);
+						currentLine = br.readLine();
+					}
+				} else {
+					String auxSplit[] = currentLine.split(" ");
+					Plotable src = vertexList.get(Integer.parseInt(auxSplit[0]));
+					Plotable dest = vertexList.get(Integer.parseInt(auxSplit[1]));
+					this.addAdjacency(src, dest);
+					this.getAdjacency(src, dest).setWeight(Double.parseDouble(auxSplit[2]));
+					currentLine = br.readLine();
+				}
+			}
+			return true;
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public boolean isCyclic() {
+		Entry<Plotable, List<Adjacency>> entry = list.entrySet().iterator().next();
+		Plotable start = entry.getKey();
+
+		int limit = getTotalVertexes();
+		Set<Plotable> visited = new HashSet<>();
+		Queue<Plotable> queue = new LinkedList<>();
+		int currentLayerSize = 0;
+		int atLayer = -1;
+
+		queue.add(start);
+		while (queue.size() > 0) {
+			Plotable first = queue.remove();
+			if (!visited.contains(first)) {
+				visited.add(first);
+				List<Adjacency> adjacencyList = list.get(first);
+				if (atLayer + 1 != limit) {
+					for (Adjacency adjacency : adjacencyList) {
+						queue.add(adjacency.getPlotable());
+					}
+				}
+				if (currentLayerSize == 0) {
+					currentLayerSize = queue.size();
+					if (atLayer == limit) {
+						return false;
+					}
+					atLayer++;
+				}
+				currentLayerSize--;
+			} else {
+				return true;
+			}
+		}
+		return false;
+
+	}
+
+	public boolean isEulerian() {
+		int oddCount = 0;
+		for (Entry<Plotable, List<Adjacency>> entry : list.entrySet()) {
+			if (entry.getValue().size() % 2 != 0) {
+				oddCount++;
+				if (oddCount > 2) {
+					return false;
+				}
+			}
+		}
+		if (oddCount == 0 || oddCount == 2) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isConnected() {
+		return getComponents().size() == 1;
+	}
+
+	public static AdjacencyList generateRandomGraph(int nodes, int edges, boolean isConnected) {
+		AdjacencyList result = new AdjacencyList();
+		List<Plotable> nodeList = new ArrayList<>();
+
+		for (int i = 0; i < nodes; i++) {
+			Vertex name = new Vertex("node" + i);
+			nodeList.add(name);
+			result.addVertex(name);
+		}
+		if (!isConnected) {
+			Random random = new Random();
+			for (int i = 0; i < edges; i++) {
+				int indexSrc = random.nextInt(0, nodeList.size());
+				int indexDest = random.nextInt(0, nodeList.size());
+				result.addAdjacency(nodeList.get(indexSrc), nodeList.get(indexDest));
+				result.getAdjacency(nodeList.get(indexSrc), nodeList.get(indexDest)).setWeight(random.nextDouble(100));
+			}
+		} else {
+			Random random = new Random();
+			for (Plotable node : nodeList)
+				for (Plotable otherNode : nodeList) {
+					result.addAdjacency(node, otherNode);
+					result.getAdjacency(node, otherNode).setWeight(random.nextDouble(100));
+				}
+		}
+		return result;
 	}
 
 	/**
-	 * prints Adjacency List
-	 * <p>
-	 * messes up the terminal when printing lots of adjacencies
+	 * prints until specified limit vertexes from this Adjacency List
 	 */
-	@Deprecated
-	public void printList() {
-		Map<Plotable, List<Adjacency>> aux = list.entrySet().stream()
-				.sorted(Map.Entry
-						.<Plotable, List<Adjacency>>comparingByValue((a, b) -> Integer.compare(a.size(), a.size()))
-						.reversed())
-				.limit(10)
+	public void printList(int limit) {
+		Map<Plotable, List<Adjacency>> aux = list.entrySet().stream().limit(limit)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
 		int count = 0;
 		for (Entry<Plotable, List<Adjacency>> valueSet : aux.entrySet()) {
@@ -573,6 +810,23 @@ public class AdjacencyList {
 			for (Adjacency adjacency : innerList) {
 				System.out.printf("%" + 1 + "s | ", adjacency);
 			}
+			count++;
+			System.out.println();
+		}
+	}
+
+	/**
+	 * Prints a given map
+	 * 
+	 * @param list the map
+	 */
+	public void print(Map<Plotable, Integer> list) {
+		int count = 0;
+		for (Entry<Plotable, Integer> valueSet : list.entrySet()) {
+			Plotable key = valueSet.getKey();
+			int value = valueSet.getValue();
+			System.out.printf("| (%02d) %" + 1 + "s || ", count, key.getLabel());
+			System.out.printf("%2d | ", value);
 			count++;
 			System.out.println();
 		}
